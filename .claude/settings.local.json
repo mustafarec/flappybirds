@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -L -o \"C:/Users/USER/OneDrive/Desktop/Projects/flappy birds/FlappyBirds/Assets.xcassets/bird.imageset/bird.png\" \"https://raw.githubusercontent.com/AnishKanojia/Flappy-Bird/main/gallery/sprites/bird.png\")",
+      "Bash(curl -L -o \"C:/Users/USER/OneDrive/Desktop/Projects/flappy birds/FlappyBirds/Assets.xcassets/pipe.imageset/pipe.png\" \"https://raw.githubusercontent.com/AnishKanojia/Flappy-Bird/main/gallery/sprites/pipe.png\")",
+      "Bash(curl -L -o \"C:/Users/USER/OneDrive/Desktop/Projects/flappy birds/FlappyBirds/Assets.xcassets/ground.imageset/ground.png\" \"https://raw.githubusercontent.com/saimsajidirl/Flappy-Bird-Game-In-Python/main/base.png\")",
+      "Bash(curl -L -o \"C:/Users/USER/OneDrive/Desktop/Projects/flappy birds/FlappyBirds/Assets.xcassets/background.imageset/background.png\" \"https://raw.githubusercontent.com/AnishKanojia/Flappy-Bird/main/gallery/sprites/background.png\")",
+      "WebFetch(domain:github.com)",
+      "Bash(curl -L -o \"C:/Users/USER/OneDrive/Desktop/Projects/flappy birds/FlappyBirds/Assets.xcassets/bird.imageset/bird.png\" \"https://raw.githubusercontent.com/AnishKanojia/Flappy-Bird/main/Gallery/sprites/bird.png\")"
+    ]
+  }
+}
