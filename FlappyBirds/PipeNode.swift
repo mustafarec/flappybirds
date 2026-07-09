@@ -31,21 +31,19 @@ class PipeNode: SKNode {
 
         // Bottom pipe (normal orientation)
         let bottomPipe = SKSpriteNode(imageNamed: "pipe")
-        bottomPipe.anchorPoint = CGPoint(x: 0.5, y: 0)
         bottomPipe.size = CGSize(width: Self.pipeWidth, height: bottomPipeHeight)
-        bottomPipe.position = CGPoint(x: Self.pipeWidth / 2, y: 0)
+        bottomPipe.position = CGPoint(x: Self.pipeWidth / 2, y: bottomPipeHeight / 2)
         bottomPipe.centerRect = centerRectForPipe(textureHeight: bottomPipe.texture!.size().height)
-        bottomPipe.physicsBody = createPipePhysics(size: bottomPipe.size, position: bottomPipe.position)
+        bottomPipe.physicsBody = createPipePhysics(size: bottomPipe.size)
         addChild(bottomPipe)
 
         // Top pipe (flipped vertically)
         let topPipe = SKSpriteNode(imageNamed: "pipe")
-        topPipe.anchorPoint = CGPoint(x: 0.5, y: 1)
         topPipe.yScale = -1
         topPipe.size = CGSize(width: Self.pipeWidth, height: topPipeHeight)
-        topPipe.position = CGPoint(x: Self.pipeWidth / 2, y: totalHeight)
+        topPipe.position = CGPoint(x: Self.pipeWidth / 2, y: totalHeight - topPipeHeight / 2)
         topPipe.centerRect = centerRectForPipe(textureHeight: topPipe.texture!.size().height)
-        topPipe.physicsBody = createPipePhysics(size: topPipe.size, position: topPipe.position)
+        topPipe.physicsBody = createPipePhysics(size: topPipe.size)
         addChild(topPipe)
     }
 
@@ -68,8 +66,8 @@ class PipeNode: SKNode {
         addChild(scoreSensor)
     }
 
-    private func createPipePhysics(size: CGSize, position: CGPoint) -> SKPhysicsBody {
-        let body = SKPhysicsBody(rectangleOf: size, center: position)
+    private func createPipePhysics(size: CGSize) -> SKPhysicsBody {
+        let body = SKPhysicsBody(rectangleOf: size)
         body.categoryBitMask = BirdNode.pipeCategory
         body.collisionBitMask = BirdNode.birdCategory
         body.contactTestBitMask = BirdNode.birdCategory

@@ -10,19 +10,13 @@ Swift + SpriteKit ile yapılmış klasik Flappy Birds oyunu.
 
 ## Kurulum
 
-1. Xcode'da **File → New → Project → iOS → Game** seçin
-2. Template: **SpriteKit**, Language: **Swift**
-3. Proje adını `FlappyBirds` olarak belirleyin
-4. Otomatik oluşturulan `GameScene.swift`, `GameViewController.swift` dosyalarını bu repodaki dosyalarla değiştirin
-5. `AppDelegate.swift` zaten varsa mevcut olanı bu repodakiyle değiştirin (veya `@main` attribute'unu ekleyin)
-6. `FlappyBirds/` klasöründeki diğer Swift dosyalarını projeye ekleyin:
-   - `GameState.swift`
-   - `ScoreManager.swift`
-   - `BirdNode.swift`
-   - `PipeNode.swift`
-   - `GroundNode.swift`
-7. `Assets.xcassets/` klasörünü projeye sürükleyin (Xcode'da "Copy items if needed" işaretli)
-8. Xcode'da **Product → Run** (⌘R) ile çalıştırın
+1. `FlappyBirds.xcodeproj` dosyasını Xcode'da açın.
+2. Bir iPhone simülatörü veya cihaz seçin.
+3. **Product → Run** (⌘R) ile oyunu çalıştırın.
+
+## Test
+
+Xcode'da **Product → Test** (⌘U) komutunu çalıştırın. `FlappyBirdsTests` hedefi, kuşun zıplama hızını doğrular.
 
 ## Oynanış
 
