@@ -1,6 +1,11 @@
 import SpriteKit
+import UIKit
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
+
+    private enum ActionKey {
+        static let birdRotation = "birdRotation"
+    }
 
     // MARK: - Properties
     private var bird: BirdNode!
@@ -26,10 +31,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     override func didMove(to view: SKView) {
         physicsWorld.contactDelegate = self
-        physicsWorld.gravity = CGVector(dx: 0, dy: -9.8)
+        physicsWorld.gravity = CGVector(dx: 0, dy: -900)
 
         setupBackground()
         setupGround()
+        setupCeiling()
         setupBird()
         setupLabels()
         enterReadyState()
@@ -80,6 +86,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         ground.position = CGPoint(x: 0, y: 0)
         ground.zPosition = 5
         addChild(ground)
+    }
+
+    private func setupCeiling() {
+        let ceiling = SKNode()
+        ceiling.physicsBody = SKPhysicsBody(edgeFrom: CGPoint(x: 0, y: size.height),
+                                            to: CGPoint(x: size.width, y: size.height))
+        ceiling.physicsBody?.categoryBitMask = BirdNode.groundCategory
+        ceiling.physicsBody?.collisionBitMask = BirdNode.birdCategory
+        ceiling.physicsBody?.contactTestBitMask = BirdNode.birdCategory
+        ceiling.physicsBody?.isDynamic = false
+        addChild(ceiling)
     }
 
     // MARK: - Bird
@@ -206,6 +223,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private func enterGameOverState() {
         gameState = .gameOver
         bird.disablePhysics()
+        bird.removeAction(forKey: ActionKey.birdRotation)
 
         // Let bird fall visually
         let fall = SKAction.moveBy(x: 0, y: -size.height * 0.3, duration: 0.3)
@@ -225,7 +243,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         // Show game over UI with delay
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
-            guard let self = self else { return }
+            guard let self, self.gameState == .gameOver else { return }
             self.gameOverLabel.isHidden = false
             self.gameOverScoreLabel.text = "Score: \(self.scoreManager.currentScore)"
             self.gameOverScoreLabel.isHidden = false
@@ -237,6 +255,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // MARK: - Pipe Spawning
 
     private func startSpawningPipes() {
+        stopSpawningPipes()
         spawnPipe()
         pipeTimer = Timer.scheduledTimer(withTimeInterval: pipeSpawnInterval, repeats: true) { [weak self] _ in
             self?.spawnPipe()
@@ -296,13 +315,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         ground.removeFromParent()
         setupGround()
 
-        // Remove clouds and re-add
-        enumerateChildNodes(withName: "//*") { node, _ in
-            if node is SKSpriteNode && node.zPosition == -5 {
-                node.removeFromParent()
-            }
-        }
-
         enterReadyState()
     }
 
@@ -324,7 +336,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
 
         // Bird passed through score sensor
-        if (catA == BirdNode.birdCategory && catB == BirdNode.scoreCategory) ||
+        if gameState == .playing,
+           (catA == BirdNode.birdCategory && catB == BirdNode.scoreCategory) ||
            (catB == BirdNode.birdCategory && catA == BirdNode.scoreCategory) {
             let sensorBody: SKPhysicsBody = (catA == BirdNode.scoreCategory) ? bodyA : bodyB
             if let sensorNode = sensorBody.node,
@@ -358,7 +371,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if gameState == .playing, let velocity = bird.physicsBody?.velocity {
             let angle = min(max(velocity.dy / 400 * .pi / 3, -.pi / 3), .pi / 4)
             let rotate = SKAction.rotate(toAngle: angle, duration: 0.1, shortestUnitArc: true)
-            bird.run(rotate)
+            bird.run(rotate, withKey: ActionKey.birdRotation)
         }
+    }
+
+    override func willMove(from view: SKView) {
+        stopSpawningPipes()
     }
 }

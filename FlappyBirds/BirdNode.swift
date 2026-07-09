@@ -12,7 +12,7 @@ class BirdNode: SKSpriteNode {
     static let birdSize: CGSize = CGSize(width: 68, height: 48)
 
     // MARK: - Flap
-    private let flapImpulse: CGFloat = 280.0
+    static let flapVelocity: CGFloat = 350
 
     init() {
         let texture = SKTexture(imageNamed: "bird")
@@ -37,7 +37,7 @@ class BirdNode: SKSpriteNode {
     }
 
     func flap() {
-        physicsBody?.velocity = CGVector(dx: 0, dy: flapImpulse)
+        physicsBody?.velocity = CGVector(dx: 0, dy: Self.flapVelocity)
     }
 
     func disablePhysics() {

@@ -42,7 +42,7 @@ class GroundNode: SKNode {
     private func createGroundPhysics(node: SKSpriteNode) -> SKPhysicsBody {
         // Create a thinner physics body so the ground collision is at the top
         let body = SKPhysicsBody(rectangleOf: CGSize(width: node.size.width, height: 20),
-                                  center: CGPoint(x: node.size.width / 2, y: node.size.height))
+                                  center: CGPoint(x: node.size.width / 2, y: node.size.height - 10))
         body.categoryBitMask = BirdNode.groundCategory
         body.collisionBitMask = BirdNode.birdCategory
         body.contactTestBitMask = BirdNode.birdCategory
