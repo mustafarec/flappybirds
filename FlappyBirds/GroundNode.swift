@@ -21,6 +21,7 @@ class GroundNode: SKNode {
 
     private func setupGround(totalWidth: CGFloat) {
         let texture = SKTexture(imageNamed: "ground")
+        texture.filteringMode = .nearest
 
         // Scale to fill width, keep aspect ratio for height
         let groundWidth = totalWidth + 100
@@ -53,18 +54,14 @@ class GroundNode: SKNode {
 
     private func startScrolling(totalWidth: CGFloat) {
         let groundWidth = totalWidth + 100
-        let moveDistance = groundWidth
+        let moveDistance = groundWidth * 2
         let duration = moveDistance / abs(groundSpeed)
 
         let moveLeft = SKAction.moveBy(x: -moveDistance, y: 0, duration: duration)
-        let reset = SKAction.moveBy(x: moveDistance * 2, y: 0, duration: 0)
+        let reset = SKAction.moveBy(x: moveDistance, y: 0, duration: 0)
         let scrollForever = SKAction.repeatForever(SKAction.sequence([moveLeft, reset]))
         ground1.run(scrollForever)
-
-        let moveLeft2 = SKAction.moveBy(x: -moveDistance, y: 0, duration: duration)
-        let reset2 = SKAction.moveBy(x: moveDistance * 2, y: 0, duration: 0)
-        let scrollForever2 = SKAction.repeatForever(SKAction.sequence([moveLeft2, reset2]))
-        ground2.run(scrollForever2)
+        ground2.run(scrollForever)
     }
 
     func stop() {

@@ -9,6 +9,7 @@ class PipeNode: SKNode {
 
     // MARK: - Track if score has been counted
     var scored: Bool = false
+    var starCollected: Bool = false
 
     // MARK: - Score sensor
     private var scoreSensor: SKSpriteNode!
@@ -16,7 +17,8 @@ class PipeNode: SKNode {
     init(totalHeight: CGFloat, centerY: CGFloat) {
         super.init()
         setupPipes(totalHeight: totalHeight, centerY: centerY)
-        setupScoreSensor(totalHeight: totalHeight, centerY: centerY)
+        setupStar(centerY: centerY)
+        setupScoreSensor(centerY: centerY)
         startMoving()
     }
 
@@ -28,9 +30,11 @@ class PipeNode: SKNode {
         let halfGap = gapHeight / 2
         let topPipeHeight = totalHeight - (centerY + halfGap)
         let bottomPipeHeight = centerY - halfGap
+        let texture = SKTexture(imageNamed: "pipe")
+        texture.filteringMode = .nearest
 
         // Bottom pipe (normal orientation)
-        let bottomPipe = SKSpriteNode(imageNamed: "pipe")
+        let bottomPipe = SKSpriteNode(texture: texture)
         bottomPipe.size = CGSize(width: Self.pipeWidth, height: bottomPipeHeight)
         bottomPipe.position = CGPoint(x: Self.pipeWidth / 2, y: bottomPipeHeight / 2)
         bottomPipe.centerRect = centerRectForPipe(textureHeight: bottomPipe.texture!.size().height)
@@ -38,7 +42,7 @@ class PipeNode: SKNode {
         addChild(bottomPipe)
 
         // Top pipe (flipped vertically)
-        let topPipe = SKSpriteNode(imageNamed: "pipe")
+        let topPipe = SKSpriteNode(texture: texture)
         topPipe.yScale = -1
         topPipe.size = CGSize(width: Self.pipeWidth, height: topPipeHeight)
         topPipe.position = CGPoint(x: Self.pipeWidth / 2, y: totalHeight - topPipeHeight / 2)
@@ -53,10 +57,25 @@ class PipeNode: SKNode {
         return CGRect(x: 0, y: capHeight, width: 1, height: 1 - 2 * capHeight)
     }
 
-    private func setupScoreSensor(totalHeight: CGFloat, centerY: CGFloat) {
+    private func setupStar(centerY: CGFloat) {
+        let texture = SKTexture(imageNamed: "star")
+        texture.filteringMode = .nearest
+        let star = SKSpriteNode(texture: texture)
+        star.size = CGSize(width: 40, height: 40)
+        star.position = CGPoint(x: Self.pipeWidth / 2, y: centerY)
+        star.physicsBody = SKPhysicsBody(circleOfRadius: 16)
+        star.physicsBody?.categoryBitMask = BirdNode.starCategory
+        star.physicsBody?.contactTestBitMask = BirdNode.birdCategory
+        star.physicsBody?.collisionBitMask = 0
+        star.physicsBody?.affectedByGravity = false
+        star.physicsBody?.isDynamic = false
+        addChild(star)
+    }
+
+    private func setupScoreSensor(centerY: CGFloat) {
         let sensorHeight: CGFloat = gapHeight
         scoreSensor = SKSpriteNode(color: .clear, size: CGSize(width: 10, height: sensorHeight))
-        scoreSensor.position = CGPoint(x: Self.pipeWidth / 2, y: centerY)
+        scoreSensor.position = CGPoint(x: Self.pipeWidth + 20, y: centerY)
         scoreSensor.physicsBody = SKPhysicsBody(rectangleOf: scoreSensor.size)
         scoreSensor.physicsBody?.categoryBitMask = BirdNode.scoreCategory
         scoreSensor.physicsBody?.contactTestBitMask = BirdNode.birdCategory
