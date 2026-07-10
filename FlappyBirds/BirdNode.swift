@@ -7,8 +7,9 @@ class BirdNode: SKSpriteNode {
     static let pipeCategory: UInt32 = 0x1 << 1
     static let groundCategory: UInt32 = 0x1 << 2
     static let scoreCategory: UInt32 = 0x1 << 3   // invisible sensor for scoring
+    static let starCategory: UInt32 = 0x1 << 4
 
-    // MARK: - Bird size (asset: 34x24, scaled up ~2x)
+    // MARK: - Bird size (asset: 68x48)
     static let birdSize: CGSize = CGSize(width: 68, height: 48)
 
     // MARK: - Flap
@@ -16,6 +17,7 @@ class BirdNode: SKSpriteNode {
 
     init() {
         let texture = SKTexture(imageNamed: "bird")
+        texture.filteringMode = .nearest
         super.init(texture: texture, color: .clear, size: Self.birdSize)
         setupPhysics()
     }
@@ -29,7 +31,7 @@ class BirdNode: SKSpriteNode {
         physicsBody = SKPhysicsBody(circleOfRadius: Self.birdSize.width * 0.35)
         physicsBody?.categoryBitMask = Self.birdCategory
         physicsBody?.collisionBitMask = Self.groundCategory | Self.pipeCategory
-        physicsBody?.contactTestBitMask = Self.groundCategory | Self.pipeCategory | Self.scoreCategory
+        physicsBody?.contactTestBitMask = Self.groundCategory | Self.pipeCategory | Self.scoreCategory | Self.starCategory
         physicsBody?.affectedByGravity = true
         physicsBody?.allowsRotation = false
         physicsBody?.restitution = 0

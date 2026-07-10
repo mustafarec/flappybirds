@@ -16,12 +16,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     // UI labels
     private var scoreLabel: SKLabelNode!
+    private var comboLabel: SKLabelNode!
     private var highScoreLabel: SKLabelNode!
     private var titleLabel: SKLabelNode!
     private var tapToStartLabel: SKLabelNode!
     private var gameOverLabel: SKLabelNode!
     private var restartLabel: SKLabelNode!
     private var gameOverScoreLabel: SKLabelNode!
+    private var privacyLabel: SKLabelNode!
 
     // Pipe spawning
     private var pipeTimer: Timer?
@@ -46,37 +48,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private func setupBackground() {
         // Use background image (288x512), scale to fill screen
         let bgTexture = SKTexture(imageNamed: "background")
+        bgTexture.filteringMode = .nearest
         let bgNode = SKSpriteNode(texture: bgTexture, size: size)
         bgNode.position = CGPoint(x: size.width / 2, y: size.height / 2)
         bgNode.zPosition = -10
         addChild(bgNode)
-
-        // Add a few semi-transparent moving clouds for depth
-        for i in 0..<3 {
-            let cloud = createCloud()
-            cloud.position = CGPoint(
-                x: CGFloat.random(in: 0...size.width),
-                y: size.height * 0.72 + CGFloat.random(in: -30...30)
-            )
-            cloud.alpha = 0.4
-            cloud.zPosition = -5
-            addChild(cloud)
-
-            let drift = SKAction.moveBy(x: -size.width - 120, y: 0, duration: 12 + Double.random(in: 0...6))
-            let reset = SKAction.moveBy(x: size.width + 120, y: 0, duration: 0)
-            cloud.run(SKAction.repeatForever(SKAction.sequence([drift, reset])))
-        }
-    }
-
-    private func createCloud() -> SKSpriteNode {
-        let cloudSize = CGSize(width: 80, height: 35)
-        let renderer = UIGraphicsImageRenderer(size: cloudSize)
-        let image = renderer.image { ctx in
-            UIColor.white.withAlphaComponent(0.8).setFill()
-            let path = UIBezierPath(roundedRect: CGRect(origin: .zero, size: cloudSize), cornerRadius: 17)
-            path.fill()
-        }
-        return SKSpriteNode(texture: SKTexture(image: image))
     }
 
     // MARK: - Ground
@@ -121,11 +97,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         scoreLabel.isHidden = true
         addChild(scoreLabel)
 
+        comboLabel = SKLabelNode(fontNamed: "HelveticaNeue-Bold")
+        comboLabel.fontSize = 18
+        comboLabel.fontColor = UIColor(red: 1.0, green: 0.82, blue: 0.4, alpha: 1.0)
+        comboLabel.position = CGPoint(x: size.width / 2, y: size.height - 120)
+        comboLabel.zPosition = 20
+        comboLabel.isHidden = true
+        addChild(comboLabel)
+
         // High score label
         highScoreLabel = SKLabelNode(fontNamed: "HelveticaNeue")
         highScoreLabel.fontSize = 18
         highScoreLabel.fontColor = .white
-        highScoreLabel.position = CGPoint(x: size.width / 2, y: size.height - 110)
+        highScoreLabel.position = CGPoint(x: size.width / 2, y: size.height - 150)
         highScoreLabel.zPosition = 20
         highScoreLabel.text = "Best: \(scoreManager.highScore)"
         addChild(highScoreLabel)
@@ -136,7 +120,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         titleLabel.fontColor = .white
         titleLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.7)
         titleLabel.zPosition = 20
-        titleLabel.text = "Flappy Birds"
+        titleLabel.text = "Sky Hopper"
         addChild(titleLabel)
 
         // Tap to start
@@ -176,6 +160,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         restartLabel.text = "Tap to Restart"
         restartLabel.isHidden = true
         addChild(restartLabel)
+
+        privacyLabel = SKLabelNode(fontNamed: "HelveticaNeue")
+        privacyLabel.fontSize = 14
+        privacyLabel.fontColor = UIColor.white.withAlphaComponent(0.85)
+        privacyLabel.position = CGPoint(x: size.width / 2, y: GroundNode.groundHeight + 24)
+        privacyLabel.zPosition = 20
+        privacyLabel.text = "Privacy"
+        addChild(privacyLabel)
     }
 
     // MARK: - States
@@ -195,9 +187,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         titleLabel.isHidden = false
         tapToStartLabel.isHidden = false
         scoreLabel.isHidden = true
+        comboLabel.isHidden = true
         gameOverLabel.isHidden = true
         gameOverScoreLabel.isHidden = true
         restartLabel.isHidden = true
+        privacyLabel.isHidden = false
         highScoreLabel.text = "Best: \(scoreManager.highScore)"
     }
 
@@ -209,6 +203,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         scoreManager.reset()
         scoreLabel.text = "0"
+        comboLabel.isHidden = true
 
         titleLabel.isHidden = true
         tapToStartLabel.isHidden = true
@@ -216,12 +211,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         gameOverLabel.isHidden = true
         gameOverScoreLabel.isHidden = true
         restartLabel.isHidden = true
+        privacyLabel.isHidden = true
 
         startSpawningPipes()
     }
 
     private func enterGameOverState() {
         gameState = .gameOver
+        comboLabel.isHidden = true
+        privacyLabel.isHidden = true
         bird.disablePhysics()
         bird.removeAction(forKey: ActionKey.birdRotation)
 
@@ -284,6 +282,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // MARK: - Touch Handling
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if gameState == .ready,
+           let touch = touches.first,
+           nodes(at: touch.location(in: self)).contains(where: { $0 === privacyLabel }),
+           let url = URL(string: "https://mustafarec.github.io/sky-hopper/privacy/") {
+            UIApplication.shared.open(url)
+            return
+        }
+
         switch gameState {
         case .ready:
             enterPlayingState()
@@ -344,13 +350,28 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                let pipeNode = sensorNode.parent as? PipeNode,
                !pipeNode.scored {
                 pipeNode.scored = true
-                scoreManager.incrementScore()
+                scoreManager.recordGate(starCollected: pipeNode.starCollected)
                 scoreLabel.text = "\(scoreManager.currentScore)"
+                comboLabel.text = "STAR x\(scoreManager.currentMultiplier)"
+                comboLabel.isHidden = scoreManager.currentMultiplier < 2
 
                 // Flash score label
                 let scaleUp = SKAction.scale(to: 1.3, duration: 0.1)
                 let scaleDown = SKAction.scale(to: 1.0, duration: 0.1)
                 scoreLabel.run(SKAction.sequence([scaleUp, scaleDown]))
+            }
+        }
+
+        // Bird collected the star before passing the gate
+        if gameState == .playing,
+           (catA == BirdNode.birdCategory && catB == BirdNode.starCategory) ||
+           (catB == BirdNode.birdCategory && catA == BirdNode.starCategory) {
+            let starBody: SKPhysicsBody = (catA == BirdNode.starCategory) ? bodyA : bodyB
+            if let starNode = starBody.node,
+               let pipeNode = starNode.parent as? PipeNode,
+               !pipeNode.starCollected {
+                pipeNode.starCollected = true
+                starNode.removeFromParent()
             }
         }
     }

@@ -1,51 +1,33 @@
-# Flappy Birds
+# Sky Hopper
 
-Swift + SpriteKit ile yapılmış klasik Flappy Birds oyunu.
+Swift ve SpriteKit ile geliştirilmiş, yıldız zinciri mekaniğine sahip özgün bir iPhone arcade oyunu.
 
 ## Gereksinimler
 
-- **Xcode 15+**
-- **iOS 15+** (iPhone)
-- Swift 5
+- Xcode 26+
+- iOS 15+ hedefi
+- App Store yüklemesi için iOS 26 SDK
 
-## Kurulum
+## Çalıştırma ve test
 
 1. `FlappyBirds.xcodeproj` dosyasını Xcode'da açın.
 2. Bir iPhone simülatörü veya cihaz seçin.
-3. **Product → Run** (⌘R) ile oyunu çalıştırın.
-
-## Test
-
-Xcode'da **Product → Test** (⌘U) komutunu çalıştırın. `FlappyBirdsTests` hedefi, kuşun zıplama hızını doğrular.
+3. **Product → Run** (⌘R) ile oyunu, **Product → Test** (⌘U) ile testleri çalıştırın.
 
 ## Oynanış
 
-- **Tap**: Kuşu zıplat
-- Boruların arasından geç, her geçiş +1 puan
-- Yere veya boruya çarparsan oyun biter
-- En yüksek skorun kaydedilir
+- Dokunarak kuşu zıplatın.
+- Her geçit en az 1 puan verir.
+- Arka arkaya yıldız toplayarak puan çarpanını `x5` değerine kadar yükseltin.
+- Bir yıldızı kaçırmak zinciri sıfırlar.
+- Yere, tavana veya bir geçide çarpmak oyunu bitirir.
 
-## Proje Yapısı
+## Gizlilik
 
-| Dosya | Açıklama |
-|---|---|
-| `AppDelegate.swift` | Uygulama giriş noktası |
-| `GameViewController.swift` | SpriteKit sahnesini yönetir |
-| `GameScene.swift` | Ana oyun sahnesi, tüm oyun mantığı |
-| `GameState.swift` | Oyun durumu enum'u |
-| `BirdNode.swift` | Kuş karakteri |
-| `PipeNode.swift` | Boru engelleri |
-| `GroundNode.swift` | Hareketli zemin |
-| `ScoreManager.swift` | Skor takibi ve kaydı |
-| `Assets.xcassets/` | Oyun asset'leri (kuş, boru, zemin, arka plan PNG) |
+Sky Hopper hesap, reklam veya analitik kullanmaz ve kişisel veri toplamaz. En yüksek skor yalnızca cihazdaki `UserDefaults` alanında saklanır. Ayrıntılar: [Privacy Policy](https://mustafarec.github.io/sky-hopper/privacy/).
 
-## Asset Kaynakları
+## Görseller
 
-Oyun grafikleri GitHub'daki açık kaynak Flappy Bird reposundan alınmıştır:
+Kuş, yıldız, yüzen kuleler, zemin, arka plan ve uygulama ikonu bu proje için özgün olarak üretilmiştir. Üretim notları `ASSET_PROVENANCE.md` dosyasındadır.
 
-| Asset | Kaynak |
-|---|---|
-| `bird.png` (34×24) | [AnishKanojia/Flappy-Bird](https://github.com/AnishKanojia/Flappy-Bird) |
-| `pipe.png` (52×320) | [AnishKanojia/Flappy-Bird](https://github.com/AnishKanojia/Flappy-Bird) |
-| `ground.png` (336×112) | [AnishKanojia/Flappy-Bird](https://github.com/AnishKanojia/Flappy-Bird) |
-| `background.png` (288×512) | [AnishKanojia/Flappy-Bird](https://github.com/AnishKanojia/Flappy-Bird) |
+Copyright © 2026 rcpgl. All rights reserved.
