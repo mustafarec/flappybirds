@@ -21,6 +21,11 @@
 		1A000000000000000000000C /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A000000000000000000010E /* UIKit.framework */; };
 		1A000000000000000000000D /* BirdNodeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A000000000000000000010F /* BirdNodeTests.swift */; };
 		1A000000000000000000000E /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000110 /* XCTest.framework */; };
+		1A000000000000000000000F /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000206 /* Localizable.strings */; };
+		1A0000000000000000000010 /* flap.wav in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000116 /* flap.wav */; };
+		1A0000000000000000000011 /* star.wav in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000117 /* star.wav */; };
+		1A0000000000000000000012 /* score.wav in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000118 /* score.wav */; };
+		1A0000000000000000000013 /* hit.wav in Resources */ = {isa = PBXBuildFile; fileRef = 1A0000000000000000000119 /* hit.wav */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +56,12 @@
 		1A0000000000000000000110 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = System/Library/Frameworks/XCTest.framework; sourceTree = SDKROOT; };
 		1A0000000000000000000111 /* FlappyBirds.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FlappyBirds.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A0000000000000000000112 /* FlappyBirdsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FlappyBirdsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		1A0000000000000000000114 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		1A0000000000000000000115 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
+		1A0000000000000000000116 /* flap.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = flap.wav; sourceTree = "<group>"; };
+		1A0000000000000000000117 /* star.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = star.wav; sourceTree = "<group>"; };
+		1A0000000000000000000118 /* score.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = score.wav; sourceTree = "<group>"; };
+		1A0000000000000000000119 /* hit.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = hit.wav; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,6 +107,8 @@
 				1A0000000000000000000108 /* GroundNode.swift */,
 				1A0000000000000000000109 /* Info.plist */,
 				1A000000000000000000010A /* Assets.xcassets */,
+				1A0000000000000000000206 /* Localizable.strings */,
+				1A0000000000000000000207 /* Sounds */,
 				1A0000000000000000000203 /* Base */,
 			);
 			path = FlappyBirds;
@@ -124,6 +137,17 @@
 				1A000000000000000000010F /* BirdNodeTests.swift */,
 			);
 			path = FlappyBirdsTests;
+			sourceTree = "<group>";
+		};
+		1A0000000000000000000207 /* Sounds */ = {
+			isa = PBXGroup;
+			children = (
+				1A0000000000000000000116 /* flap.wav */,
+				1A0000000000000000000117 /* star.wav */,
+				1A0000000000000000000118 /* score.wav */,
+				1A0000000000000000000119 /* hit.wav */,
+			);
+			path = Sounds;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -187,6 +211,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				tr,
 				Base,
 			);
 			mainGroup = 1A0000000000000000000201;
@@ -207,6 +232,11 @@
 			files = (
 				1A0000000000000000000009 /* Assets.xcassets in Resources */,
 				1A000000000000000000000A /* LaunchScreen.storyboard in Resources */,
+				1A000000000000000000000F /* Localizable.strings in Resources */,
+				1A0000000000000000000010 /* flap.wav in Resources */,
+				1A0000000000000000000011 /* star.wav in Resources */,
+				1A0000000000000000000012 /* score.wav in Resources */,
+				1A0000000000000000000013 /* hit.wav in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -237,6 +267,18 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		1A0000000000000000000206 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				1A0000000000000000000114 /* en */,
+				1A0000000000000000000115 /* tr */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin PBXTargetDependency section */
 		1A0000000000000000000602 /* PBXTargetDependency */ = {

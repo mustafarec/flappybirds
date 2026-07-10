@@ -1,10 +1,30 @@
 import SpriteKit
 import UIKit
 
+struct GameDifficulty: Equatable {
+    let pipeSpeed: CGFloat
+    let gapHeight: CGFloat
+    let spawnInterval: TimeInterval
+
+    static func forGatesPassed(_ gatesPassed: Int) -> GameDifficulty {
+        let level = min(max(gatesPassed, 0) / 5, 4)
+        return GameDifficulty(
+            pipeSpeed: 200 + CGFloat(level * 20),
+            gapHeight: 180 - CGFloat(level) * 7.5,
+            spawnInterval: 2.5 - Double(level) * 0.15
+        )
+    }
+}
+
 class GameScene: SKScene, SKPhysicsContactDelegate {
 
     private enum ActionKey {
         static let birdRotation = "birdRotation"
+    }
+
+    private enum PreferenceKey {
+        static let soundEnabled = "SkyHopper_SoundEnabled"
+        static let hasSeenTutorial = "SkyHopper_HasSeenTutorial"
     }
 
     // MARK: - Properties
@@ -24,14 +44,47 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private var restartLabel: SKLabelNode!
     private var gameOverScoreLabel: SKLabelNode!
     private var privacyLabel: SKLabelNode!
+    private var soundLabel: SKLabelNode!
+    private var tutorialLabel: SKLabelNode!
 
     // Pipe spawning
     private var pipeTimer: Timer?
-    private let pipeSpawnInterval: TimeInterval = 2.5
+    private var pausedForInactivity = false
+
+    private let flapFeedback = UIImpactFeedbackGenerator(style: .light)
+    private let starFeedback = UISelectionFeedbackGenerator()
+    private let collisionFeedback = UIImpactFeedbackGenerator(style: .heavy)
+
+    private var isSoundEnabled: Bool {
+        get { UserDefaults.standard.object(forKey: PreferenceKey.soundEnabled) as? Bool ?? true }
+        set { UserDefaults.standard.set(newValue, forKey: PreferenceKey.soundEnabled) }
+    }
+
+    private var hasSeenTutorial: Bool {
+        get { UserDefaults.standard.bool(forKey: PreferenceKey.hasSeenTutorial) }
+        set { UserDefaults.standard.set(newValue, forKey: PreferenceKey.hasSeenTutorial) }
+    }
+
+    private var currentDifficulty: GameDifficulty {
+        GameDifficulty.forGatesPassed(scoreManager.gatesPassed)
+    }
 
     // MARK: - Scene Lifecycle
 
     override func didMove(to view: SKView) {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(pauseForInactivity),
+            name: UIApplication.willResignActiveNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(resumeAfterInactivity),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
+
         physicsWorld.contactDelegate = self
         physicsWorld.gravity = CGVector(dx: 0, dy: -900)
 
@@ -86,6 +139,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     // MARK: - Labels
 
+    private func localized(_ key: String) -> String {
+        NSLocalizedString(key, comment: "")
+    }
+
+    private func localizedFormat(_ key: String, _ value: Int) -> String {
+        String(format: localized(key), value)
+    }
+
     private func setupLabels() {
         // Score label - top center
         scoreLabel = SKLabelNode(fontNamed: "HelveticaNeue-Bold")
@@ -111,7 +172,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         highScoreLabel.fontColor = .white
         highScoreLabel.position = CGPoint(x: size.width / 2, y: size.height - 150)
         highScoreLabel.zPosition = 20
-        highScoreLabel.text = "Best: \(scoreManager.highScore)"
+        highScoreLabel.text = localizedFormat("best_format", scoreManager.highScore)
         addChild(highScoreLabel)
 
         // Title label
@@ -120,7 +181,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         titleLabel.fontColor = .white
         titleLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.7)
         titleLabel.zPosition = 20
-        titleLabel.text = "Sky Hopper"
+        titleLabel.text = localized("game_title")
         addChild(titleLabel)
 
         // Tap to start
@@ -129,8 +190,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         tapToStartLabel.fontColor = .white
         tapToStartLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.55)
         tapToStartLabel.zPosition = 20
-        tapToStartLabel.text = "Tap to Start"
+        tapToStartLabel.text = localized("tap_to_start")
         addChild(tapToStartLabel)
+
+        tutorialLabel = SKLabelNode(fontNamed: "HelveticaNeue")
+        tutorialLabel.fontSize = 15
+        tutorialLabel.fontColor = UIColor.white.withAlphaComponent(0.9)
+        tutorialLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.49)
+        tutorialLabel.zPosition = 20
+        tutorialLabel.text = localized("tutorial")
+        addChild(tutorialLabel)
 
         // Game over
         gameOverLabel = SKLabelNode(fontNamed: "HelveticaNeue-Bold")
@@ -138,7 +207,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         gameOverLabel.fontColor = UIColor(red: 0.9, green: 0.2, blue: 0.2, alpha: 1.0)
         gameOverLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.6)
         gameOverLabel.zPosition = 20
-        gameOverLabel.text = "Game Over"
+        gameOverLabel.text = localized("game_over")
         gameOverLabel.isHidden = true
         addChild(gameOverLabel)
 
@@ -157,7 +226,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         restartLabel.fontColor = .white
         restartLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.44)
         restartLabel.zPosition = 20
-        restartLabel.text = "Tap to Restart"
+        restartLabel.text = localized("tap_to_restart")
         restartLabel.isHidden = true
         addChild(restartLabel)
 
@@ -166,11 +235,40 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         privacyLabel.fontColor = UIColor.white.withAlphaComponent(0.85)
         privacyLabel.position = CGPoint(x: size.width / 2, y: GroundNode.groundHeight + 24)
         privacyLabel.zPosition = 20
-        privacyLabel.text = "Privacy"
+        privacyLabel.text = localized("privacy")
+        privacyLabel.isAccessibilityElement = true
+        privacyLabel.accessibilityLabel = localized("privacy")
+        privacyLabel.accessibilityHelp = localized("privacy_help")
         addChild(privacyLabel)
+
+        soundLabel = SKLabelNode(fontNamed: "HelveticaNeue")
+        soundLabel.fontSize = 14
+        soundLabel.fontColor = UIColor.white.withAlphaComponent(0.85)
+        soundLabel.position = CGPoint(x: size.width / 2, y: GroundNode.groundHeight + 48)
+        soundLabel.zPosition = 20
+        soundLabel.isAccessibilityElement = true
+        soundLabel.accessibilityHelp = localized("sound_help")
+        updateSoundLabel()
+        addChild(soundLabel)
     }
 
     // MARK: - States
+
+    private func updateSoundLabel() {
+        soundLabel.text = localized(isSoundEnabled ? "sound_on" : "sound_off")
+        soundLabel.accessibilityLabel = soundLabel.text
+    }
+
+    private func playSound(_ name: String) {
+        guard isSoundEnabled else { return }
+        run(SKAction.playSoundFileNamed(name, waitForCompletion: false))
+    }
+
+    private func flapBird() {
+        bird.flap()
+        playSound("flap.wav")
+        flapFeedback.impactOccurred()
+    }
 
     private func enterReadyState() {
         gameState = .ready
@@ -186,20 +284,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         titleLabel.isHidden = false
         tapToStartLabel.isHidden = false
+        tutorialLabel.isHidden = hasSeenTutorial
         scoreLabel.isHidden = true
         comboLabel.isHidden = true
         gameOverLabel.isHidden = true
         gameOverScoreLabel.isHidden = true
         restartLabel.isHidden = true
         privacyLabel.isHidden = false
-        highScoreLabel.text = "Best: \(scoreManager.highScore)"
+        soundLabel.isHidden = false
+        highScoreLabel.text = localizedFormat("best_format", scoreManager.highScore)
     }
 
     private func enterPlayingState() {
         gameState = .playing
         bird.removeAllActions()
         bird.physicsBody?.affectedByGravity = true
-        bird.flap()
+        flapBird()
+        hasSeenTutorial = true
 
         scoreManager.reset()
         scoreLabel.text = "0"
@@ -207,19 +308,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         titleLabel.isHidden = true
         tapToStartLabel.isHidden = true
+        tutorialLabel.isHidden = true
         scoreLabel.isHidden = false
         gameOverLabel.isHidden = true
         gameOverScoreLabel.isHidden = true
         restartLabel.isHidden = true
         privacyLabel.isHidden = true
+        soundLabel.isHidden = true
 
         startSpawningPipes()
     }
 
     private func enterGameOverState() {
         gameState = .gameOver
+        playSound("hit.wav")
+        collisionFeedback.impactOccurred()
         comboLabel.isHidden = true
         privacyLabel.isHidden = true
+        soundLabel.isHidden = true
         bird.disablePhysics()
         bird.removeAction(forKey: ActionKey.birdRotation)
 
@@ -243,10 +349,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
             guard let self, self.gameState == .gameOver else { return }
             self.gameOverLabel.isHidden = false
-            self.gameOverScoreLabel.text = "Score: \(self.scoreManager.currentScore)"
+            self.gameOverScoreLabel.text = self.localizedFormat("score_format", self.scoreManager.currentScore)
             self.gameOverScoreLabel.isHidden = false
             self.restartLabel.isHidden = false
-            self.highScoreLabel.text = "Best: \(self.scoreManager.highScore)"
+            self.highScoreLabel.text = self.localizedFormat("best_format", self.scoreManager.highScore)
         }
     }
 
@@ -255,8 +361,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private func startSpawningPipes() {
         stopSpawningPipes()
         spawnPipe()
-        pipeTimer = Timer.scheduledTimer(withTimeInterval: pipeSpawnInterval, repeats: true) { [weak self] _ in
-            self?.spawnPipe()
+        scheduleNextPipe()
+    }
+
+    private func scheduleNextPipe() {
+        guard gameState == .playing, !pausedForInactivity else { return }
+        pipeTimer = Timer.scheduledTimer(withTimeInterval: currentDifficulty.spawnInterval, repeats: false) { [weak self] _ in
+            guard let self, self.gameState == .playing, !self.pausedForInactivity else { return }
+            self.spawnPipe()
+            self.scheduleNextPipe()
         }
     }
 
@@ -267,13 +380,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     private func spawnPipe() {
         guard gameState == .playing else { return }
+        let difficulty = currentDifficulty
 
         // Random gap center Y
         let minY = GroundNode.groundHeight + 120
         let maxY = size.height - 120
         let gapCenterY = CGFloat.random(in: minY...maxY)
 
-        let pipe = PipeNode(totalHeight: size.height, centerY: gapCenterY)
+        let pipe = PipeNode(
+            totalHeight: size.height,
+            centerY: gapCenterY,
+            gapHeight: difficulty.gapHeight,
+            speed: difficulty.pipeSpeed
+        )
         pipe.position = CGPoint(x: size.width + PipeNode.pipeWidth, y: 0)
         pipe.zPosition = 5
         addChild(pipe)
@@ -282,19 +401,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // MARK: - Touch Handling
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if gameState == .ready,
-           let touch = touches.first,
-           nodes(at: touch.location(in: self)).contains(where: { $0 === privacyLabel }),
-           let url = URL(string: "https://mustafarec.github.io/sky-hopper/privacy/") {
-            UIApplication.shared.open(url)
-            return
+        if gameState == .ready, let touch = touches.first {
+            let touchedNodes = nodes(at: touch.location(in: self))
+
+            if touchedNodes.contains(where: { $0 === soundLabel }) {
+                isSoundEnabled.toggle()
+                updateSoundLabel()
+                return
+            }
+
+            if touchedNodes.contains(where: { $0 === privacyLabel }),
+               let url = URL(string: "https://mustafarec.github.io/flappybirds/privacy/") {
+                UIApplication.shared.open(url)
+                return
+            }
         }
 
         switch gameState {
         case .ready:
             enterPlayingState()
         case .playing:
-            bird.flap()
+            flapBird()
         case .gameOver:
             restartGame()
         }
@@ -352,8 +479,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 pipeNode.scored = true
                 scoreManager.recordGate(starCollected: pipeNode.starCollected)
                 scoreLabel.text = "\(scoreManager.currentScore)"
-                comboLabel.text = "STAR x\(scoreManager.currentMultiplier)"
+                comboLabel.text = localizedFormat("combo_format", scoreManager.currentMultiplier)
                 comboLabel.isHidden = scoreManager.currentMultiplier < 2
+                playSound("score.wav")
 
                 // Flash score label
                 let scaleUp = SKAction.scale(to: 1.3, duration: 0.1)
@@ -372,6 +500,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                !pipeNode.starCollected {
                 pipeNode.starCollected = true
                 starNode.removeFromParent()
+                playSound("star.wav")
+                starFeedback.selectionChanged()
             }
         }
     }
@@ -398,5 +528,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     override func willMove(from view: SKView) {
         stopSpawningPipes()
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func pauseForInactivity() {
+        guard gameState == .playing, !pausedForInactivity else { return }
+        pausedForInactivity = true
+        stopSpawningPipes()
+        isPaused = true
+    }
+
+    @objc private func resumeAfterInactivity() {
+        guard pausedForInactivity else { return }
+        pausedForInactivity = false
+        isPaused = false
+        if gameState == .playing {
+            scheduleNextPipe()
+        }
     }
 }

@@ -1,0 +1,13 @@
+"game_title" = "Sky Hopper";
+"tap_to_start" = "Tap to Start";
+"tutorial" = "Collect consecutive stars for x5";
+"game_over" = "Game Over";
+"tap_to_restart" = "Tap to Restart";
+"privacy" = "Privacy";
+"privacy_help" = "Opens the privacy policy";
+"sound_on" = "Sound: On";
+"sound_off" = "Sound: Off";
+"sound_help" = "Turns game sounds on or off";
+"best_format" = "Best: %d";
+"score_format" = "Score: %d";
+"combo_format" = "STAR x%d";

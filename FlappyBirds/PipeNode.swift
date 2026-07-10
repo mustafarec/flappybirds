@@ -4,8 +4,8 @@ class PipeNode: SKNode {
 
     // MARK: - Constants (pipe asset: 52x320)
     static let pipeWidth: CGFloat = 52
-    private let gapHeight: CGFloat = 180      // vertical gap between top and bottom pipes
-    private let pipeSpeed: CGFloat = -200     // pixels per second, moving left
+    private let gapHeight: CGFloat
+    private let pipeSpeed: CGFloat
 
     // MARK: - Track if score has been counted
     var scored: Bool = false
@@ -14,7 +14,9 @@ class PipeNode: SKNode {
     // MARK: - Score sensor
     private var scoreSensor: SKSpriteNode!
 
-    init(totalHeight: CGFloat, centerY: CGFloat) {
+    init(totalHeight: CGFloat, centerY: CGFloat, gapHeight: CGFloat, speed: CGFloat) {
+        self.gapHeight = gapHeight
+        self.pipeSpeed = speed
         super.init()
         setupPipes(totalHeight: totalHeight, centerY: centerY)
         setupStar(centerY: centerY)

@@ -33,3 +33,14 @@ All raster assets were generated specifically for Sky Hopper with OpenAI's built
 ### `AppIcon.png` — 1024×1024 RGB
 
 > Opaque square iOS icon showing the same simplified turquoise sky bird hopping upward toward one gold star across a navy-violet-coral pixel sunset. Large deliberate 16-bit pixel clusters, bird lower-left, star upper-right, simple cloud and floating-island silhouettes, generous safe margin. Exactly one bird and star; no text, border, rounded-corner mask, logo, trademark, watermark or recognizable third-party character.
+
+## Audio provenance
+
+The four sound effects were generated procedurally for Sky Hopper with FFmpeg 8.1.1 on 2026-07-10. They use only synthesized square waves, sine waves, and filtered noise; no recording, sample library, third-party audio, voice, music, or copyrighted source was used.
+
+- `flap.wav`: 90 ms square-wave chirp
+- `star.wav`: 140 ms rising two-note square-wave reward
+- `score.wav`: 110 ms square-wave confirmation tone
+- `hit.wav`: 180 ms filtered low tone and brown-noise impact
+
+All files are mono, 44.1 kHz, 16-bit PCM WAV assets intended for short SpriteKit incidental playback.
