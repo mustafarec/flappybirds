@@ -2,7 +2,8 @@ import Foundation
 
 class ScoreManager {
 
-    private static let highScoreKey = "FlappyBirds_HighScore"
+    private static let highScoreKey = "SkyHopper_HighScore"
+    private static let legacyHighScoreKey = "FlappyBirds_HighScore"
     private static let maximumMultiplier = 5
     private let defaults: UserDefaults
 
@@ -12,6 +13,11 @@ class ScoreManager {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        if defaults.object(forKey: Self.highScoreKey) == nil,
+           defaults.object(forKey: Self.legacyHighScoreKey) != nil {
+            defaults.set(defaults.integer(forKey: Self.legacyHighScoreKey), forKey: Self.highScoreKey)
+            defaults.removeObject(forKey: Self.legacyHighScoreKey)
+        }
     }
 
     var currentMultiplier: Int {

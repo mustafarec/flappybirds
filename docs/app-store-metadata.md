@@ -5,6 +5,8 @@ This is a local draft. Final values, screenshots, age rating, and privacy answer
 ## Shared information
 
 - Version: `1.0`
+- Bundle ID: `com.rcpgl.skyhopper`
+- SKU: `SKYHOPPER-IOS-1`
 - Primary category: Games
 - Subcategories: Casual, Arcade
 - Copyright: `© 2026 rcpgl`
@@ -65,3 +67,11 @@ Puan çarpanını x5'e kadar yükseltmek için yıldızları art arda topla. Bir
 ## Review notes
 
 Sky Hopper requires no login or network connection. Tap anywhere to start and flap. Collect consecutive stars to increase the multiplier; touching a tower, the ground, or the ceiling ends the run. The Privacy link is on the ready screen, and game sounds can be disabled there.
+
+## Physical-device release check
+
+- [ ] Start, flap, and restart repeatedly without a stuck state
+- [ ] Ground, ceiling, and tower collisions end the run
+- [ ] Gate score, star chain, `x5` cap, and missed-star reset work
+- [ ] Backgrounding pauses safely and sound preference persists
+- [ ] A 10-minute run remains playable through difficulty levels 0–4

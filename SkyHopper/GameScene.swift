@@ -18,6 +18,9 @@ struct GameDifficulty: Equatable {
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
 
+    // SpriteKit converts gravity units to screen points (about 150 pt per unit).
+    static let gravityY: CGFloat = -4.2
+
     private enum ActionKey {
         static let birdRotation = "birdRotation"
     }
@@ -72,6 +75,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // MARK: - Scene Lifecycle
 
     override func didMove(to view: SKView) {
+        isUserInteractionEnabled = true
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(pauseForInactivity),
@@ -86,11 +90,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         )
 
         physicsWorld.contactDelegate = self
-        physicsWorld.gravity = CGVector(dx: 0, dy: -900)
+        physicsWorld.gravity = CGVector(dx: 0, dy: Self.gravityY)
 
         setupBackground()
         setupGround()
-        setupCeiling()
         setupBird()
         setupLabels()
         enterReadyState()
@@ -112,20 +115,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     private func setupGround() {
         ground = GroundNode(totalWidth: size.width)
+        ground.name = "ground"
         ground.position = CGPoint(x: 0, y: 0)
         ground.zPosition = 5
         addChild(ground)
-    }
-
-    private func setupCeiling() {
-        let ceiling = SKNode()
-        ceiling.physicsBody = SKPhysicsBody(edgeFrom: CGPoint(x: 0, y: size.height),
-                                            to: CGPoint(x: size.width, y: size.height))
-        ceiling.physicsBody?.categoryBitMask = BirdNode.groundCategory
-        ceiling.physicsBody?.collisionBitMask = BirdNode.birdCategory
-        ceiling.physicsBody?.contactTestBitMask = BirdNode.birdCategory
-        ceiling.physicsBody?.isDynamic = false
-        addChild(ceiling)
     }
 
     // MARK: - Bird
@@ -196,7 +189,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         tutorialLabel = SKLabelNode(fontNamed: "HelveticaNeue")
         tutorialLabel.fontSize = 15
         tutorialLabel.fontColor = UIColor.white.withAlphaComponent(0.9)
-        tutorialLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.49)
+        tutorialLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.45)
         tutorialLabel.zPosition = 20
         tutorialLabel.text = localized("tutorial")
         addChild(tutorialLabel)
@@ -238,7 +231,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         privacyLabel.text = localized("privacy")
         privacyLabel.isAccessibilityElement = true
         privacyLabel.accessibilityLabel = localized("privacy")
-        privacyLabel.accessibilityHelp = localized("privacy_help")
+        privacyLabel.accessibilityHint = localized("privacy_help")
         addChild(privacyLabel)
 
         soundLabel = SKLabelNode(fontNamed: "HelveticaNeue")
@@ -247,7 +240,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         soundLabel.position = CGPoint(x: size.width / 2, y: GroundNode.groundHeight + 48)
         soundLabel.zPosition = 20
         soundLabel.isAccessibilityElement = true
-        soundLabel.accessibilityHelp = localized("sound_help")
+        soundLabel.accessibilityHint = localized("sound_help")
         updateSoundLabel()
         addChild(soundLabel)
     }
@@ -460,9 +453,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let catA = bodyA.categoryBitMask
         let catB = bodyB.categoryBitMask
 
-        // Bird hit pipe or ground
-        if (catA == BirdNode.birdCategory && (catB == BirdNode.pipeCategory || catB == BirdNode.groundCategory)) ||
-           (catB == BirdNode.birdCategory && (catA == BirdNode.pipeCategory || catA == BirdNode.groundCategory)) {
+        // Bird hit pipe
+        if (catA == BirdNode.birdCategory && catB == BirdNode.pipeCategory) ||
+           (catB == BirdNode.birdCategory && catA == BirdNode.pipeCategory) {
             if gameState == .playing {
                 enterGameOverState()
             }
@@ -508,7 +501,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     // MARK: - Update Loop
 
+    static func isOutOfBounds(_ centerY: CGFloat, sceneHeight: CGFloat) -> Bool {
+        centerY <= GroundNode.groundHeight + BirdNode.birdSize.height / 2 ||
+        centerY >= sceneHeight - BirdNode.birdSize.height / 2
+    }
+
     override func update(_ currentTime: TimeInterval) {
+        if gameState == .playing, Self.isOutOfBounds(bird.position.y, sceneHeight: size.height) {
+            enterGameOverState()
+            return
+        }
+
         // Remove pipes that are off-screen (far left)
         enumerateChildNodes(withName: "//*") { node, _ in
             if let pipe = node as? PipeNode {

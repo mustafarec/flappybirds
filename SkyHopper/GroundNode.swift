@@ -30,26 +30,13 @@ class GroundNode: SKNode {
         ground1 = SKSpriteNode(texture: texture, size: CGSize(width: groundWidth, height: actualHeight))
         ground1.anchorPoint = CGPoint(x: 0, y: 0)
         ground1.position = CGPoint(x: 0, y: 0)
-        ground1.physicsBody = createGroundPhysics(node: ground1)
         addChild(ground1)
 
         ground2 = SKSpriteNode(texture: texture, size: CGSize(width: groundWidth, height: actualHeight))
         ground2.anchorPoint = CGPoint(x: 0, y: 0)
         ground2.position = CGPoint(x: groundWidth, y: 0)
-        ground2.physicsBody = createGroundPhysics(node: ground2)
         addChild(ground2)
-    }
 
-    private func createGroundPhysics(node: SKSpriteNode) -> SKPhysicsBody {
-        // Create a thinner physics body so the ground collision is at the top
-        let body = SKPhysicsBody(rectangleOf: CGSize(width: node.size.width, height: 20),
-                                  center: CGPoint(x: node.size.width / 2, y: node.size.height - 10))
-        body.categoryBitMask = BirdNode.groundCategory
-        body.collisionBitMask = BirdNode.birdCategory
-        body.contactTestBitMask = BirdNode.birdCategory
-        body.affectedByGravity = false
-        body.isDynamic = false
-        return body
     }
 
     private func startScrolling(totalWidth: CGFloat) {
@@ -60,7 +47,11 @@ class GroundNode: SKNode {
         let moveLeft = SKAction.moveBy(x: -moveDistance, y: 0, duration: duration)
         let reset = SKAction.moveBy(x: moveDistance, y: 0, duration: 0)
         let scrollForever = SKAction.repeatForever(SKAction.sequence([moveLeft, reset]))
-        ground1.run(scrollForever)
+        let firstWrap = SKAction.sequence([
+            SKAction.moveBy(x: -groundWidth, y: 0, duration: duration / 2),
+            reset
+        ])
+        ground1.run(SKAction.sequence([firstWrap, scrollForever]))
         ground2.run(scrollForever)
     }
 

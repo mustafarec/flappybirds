@@ -1,5 +1,5 @@
 import XCTest
-@testable import FlappyBirds
+@testable import SkyHopper
 
 final class BirdNodeTests: XCTestCase {
     func testFlapSetsConfiguredUpwardVelocity() {
@@ -7,11 +7,45 @@ final class BirdNodeTests: XCTestCase {
 
         bird.flap()
 
-        XCTAssertEqual(bird.physicsBody?.velocity.dy, BirdNode.flapVelocity)
+        XCTAssertEqual(bird.physicsBody?.velocity.dy ?? 0, BirdNode.flapVelocity, accuracy: 0.001)
+    }
+}
+
+final class GroundNodeTests: XCTestCase {
+    func testGroundVisualsHaveNoPhysicsBodies() {
+        let ground = GroundNode(totalWidth: 440)
+
+        XCTAssertNil(ground.physicsBody)
+        XCTAssertTrue(ground.children.allSatisfy { $0.physicsBody == nil })
+    }
+}
+
+final class GameSceneBoundsTests: XCTestCase {
+    func testGravityUsesSpriteKitPhysicsScale() {
+        XCTAssertEqual(GameScene.gravityY, -4.2, accuracy: 0.001)
+    }
+
+    func testBirdBoundsUseVisibleGroundAndCeiling() {
+        XCTAssertTrue(GameScene.isOutOfBounds(104, sceneHeight: 956))
+        XCTAssertFalse(GameScene.isOutOfBounds(105, sceneHeight: 956))
+        XCTAssertFalse(GameScene.isOutOfBounds(931, sceneHeight: 956))
+        XCTAssertTrue(GameScene.isOutOfBounds(932, sceneHeight: 956))
     }
 }
 
 final class ScoreManagerTests: XCTestCase {
+    func testMigratesLegacyHighScore() throws {
+        let suiteName = "ScoreManagerTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defaults.set(7, forKey: "FlappyBirds_HighScore")
+
+        let score = ScoreManager(defaults: defaults)
+
+        XCTAssertEqual(score.highScore, 7)
+        XCTAssertNil(defaults.object(forKey: "FlappyBirds_HighScore"))
+    }
+
     func testStarChainCapsAtFiveAndMissResetsIt() {
         let score = ScoreManager()
 

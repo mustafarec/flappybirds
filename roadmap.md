@@ -13,12 +13,12 @@ Amaç: Oynanabilir mevcut çekirdeği koruyarak oyun hissini geliştirmek ve kar
 
 ## 1. Sağlamlaştırma
 
-- [ ] Xcode 26 ile projeyi derle ve tüm testleri çalıştır
+- [x] Xcode 26 ile projeyi derle ve tüm testleri çalıştır
 - [ ] Küçük, orta ve büyük iPhone ekranlarında arayüzü kontrol et
 - [ ] Başlatma, çarpışma, skor, yıldız zinciri ve hızlı yeniden başlatmayı cihazda test et
 - [x] Uygulama arka plana geçtiğinde oyunu güvenli biçimde duraklat
 - [x] Gizlilik ve destek bağlantılarını `mustafarec/flappybirds` ile hizala
-- [ ] GitHub Pages sonrasında gizlilik ve destek bağlantılarını canlı ortamda doğrula
+- [x] GitHub Pages sonrasında gizlilik ve destek bağlantılarını canlı ortamda doğrula
 - [x] Skor, yüksek skor ve zorluk davranışı için kritik test kaynaklarını tamamla
 
 **Çıkış kriteri:** Testler geçiyor, engelleyici hata yok ve aynı oyun oturumu desteklenen ekran boyutlarında tutarlı çalışıyor.
@@ -44,7 +44,7 @@ Amaç: Oynanabilir mevcut çekirdeği koruyarak oyun hissini geliştirmek ve kar
 - [ ] Gizlilik URL'sini ekle ve "veri toplanmıyor" beyanını tamamla
 - [ ] Güncel yaş derecelendirmesi sorularını yanıtla
 - [ ] TestFlight sürümünü küçük bir test grubuyla doğrula
-- [ ] Xcode 26 ve iOS 26 SDK ile Release arşivi oluştur
+- [x] Xcode 26 ve iOS 26 SDK ile Release arşivi oluştur
 
 **Çıkış kriteri:** TestFlight geri bildirimlerinde engelleyici sorun yok; mağaza bilgileri, gizlilik beyanı ve yüklenebilir Release arşivi hazır.
 
