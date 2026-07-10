@@ -17,6 +17,7 @@
 "share_help" = "Sistem paylaşım ekranını açar";
 "best_format" = "En İyi: %d";
 "score_format" = "Puan: %d";
+"flap_help" = "Kanat çırpmak için çift dokunun";
 "combo_format" = "YILDIZ x%d";
 "run_summary_format" = "Puan: %d\nGeçilen kapı: %d\nEn uzun yıldız zinciri: %d";
 "share_message_format" = "Sky Hopper'da %d puan aldım, %d kapı geçtim ve art arda %d yıldız topladım!";

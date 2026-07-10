@@ -45,7 +45,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private var gameState: GameState = .ready
 
     // UI labels
-    private var scoreLabel: SKLabelNode!
+    private var scoreLabel: AccessibleLabelNode!
     private var comboLabel: SKLabelNode!
     private var highScoreLabel: SKLabelNode!
     private var titleLabel: SKLabelNode!
@@ -166,14 +166,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     private func setupLabels() {
         // Score label - top center
-        scoreLabel = SKLabelNode(fontNamed: "HelveticaNeue-Bold")
+        scoreLabel = AccessibleLabelNode(fontNamed: "HelveticaNeue-Bold")
         scoreLabel.fontSize = 48
         scoreLabel.fontColor = .white
         scoreLabel.position = CGPoint(x: size.width / 2, y: size.height - 80)
         scoreLabel.zPosition = 20
         scoreLabel.text = "0"
         scoreLabel.isHidden = true
-        scoreLabel.isAccessibilityElement = true
+        configureButton(scoreLabel, helpKey: "flap_help") { [weak self] in
+            guard let self, self.gameState == .playing else { return }
+            self.flapBird()
+        }
         scoreLabel.accessibilityLabel = localizedFormat("score_format", 0)
         addChild(scoreLabel)
 
@@ -420,6 +423,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         tapToStartLabel.isHidden = false
         tutorialLabel.isHidden = hasSeenTutorial
         scoreLabel.isHidden = true
+        scoreLabel.isAccessibilityElement = false
+        scoreLabel.isAccessibilityEnabled = false
         comboLabel.isHidden = true
         gameOverLabel.isHidden = true
         gameOverScoreLabel.isHidden = true
@@ -443,6 +448,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         scoreManager.reset()
         scoreLabel.text = "0"
         scoreLabel.accessibilityLabel = localizedFormat("score_format", 0)
+        scoreLabel.isAccessibilityElement = true
+        scoreLabel.isAccessibilityEnabled = true
         comboLabel.isHidden = true
 
         titleLabel.isHidden = true
@@ -458,10 +465,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         hapticsLabel.isHidden = true
 
         startSpawningPipes()
+        UIAccessibility.post(notification: .screenChanged, argument: scoreLabel)
     }
 
     private func enterGameOverState() {
         gameState = .gameOver
+        scoreLabel.isAccessibilityElement = false
+        scoreLabel.isAccessibilityEnabled = false
         playSound("hit.wav")
         if isHapticsEnabled {
             collisionFeedback.impactOccurred()

@@ -17,6 +17,7 @@
 "share_help" = "Opens the system share sheet";
 "best_format" = "Best: %d";
 "score_format" = "Score: %d";
+"flap_help" = "Double-tap to flap";
 "combo_format" = "STAR x%d";
 "run_summary_format" = "Score: %d\nGates: %d\nLongest star chain: %d";
 "share_message_format" = "I scored %d points, passed %d gates, and collected %d stars in a row in Sky Hopper!";
