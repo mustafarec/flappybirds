@@ -1,6 +1,15 @@
 import SpriteKit
 import UIKit
 
+private final class AccessibleLabelNode: SKLabelNode {
+    var activationHandler: (() -> Void)?
+
+    override func accessibilityActivate() -> Bool {
+        activationHandler?()
+        return activationHandler != nil
+    }
+}
+
 struct GameDifficulty: Equatable {
     let pipeSpeed: CGFloat
     let gapHeight: CGFloat
@@ -24,6 +33,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     private enum PreferenceKey {
         static let soundEnabled = "SkyHopper_SoundEnabled"
+        static let hapticsEnabled = "SkyHopper_HapticsEnabled"
         static let hasSeenTutorial = "SkyHopper_HasSeenTutorial"
     }
 
@@ -39,12 +49,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private var comboLabel: SKLabelNode!
     private var highScoreLabel: SKLabelNode!
     private var titleLabel: SKLabelNode!
-    private var tapToStartLabel: SKLabelNode!
+    private var tapToStartLabel: AccessibleLabelNode!
     private var gameOverLabel: SKLabelNode!
-    private var restartLabel: SKLabelNode!
+    private var restartLabel: AccessibleLabelNode!
     private var gameOverScoreLabel: SKLabelNode!
-    private var privacyLabel: SKLabelNode!
-    private var soundLabel: SKLabelNode!
+    private var privacyLabel: AccessibleLabelNode!
+    private var soundLabel: AccessibleLabelNode!
+    private var hapticsLabel: AccessibleLabelNode!
+    private var shareLabel: AccessibleLabelNode!
     private var tutorialLabel: SKLabelNode!
 
     // Pipe spawning
@@ -58,6 +70,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private var isSoundEnabled: Bool {
         get { UserDefaults.standard.object(forKey: PreferenceKey.soundEnabled) as? Bool ?? true }
         set { UserDefaults.standard.set(newValue, forKey: PreferenceKey.soundEnabled) }
+    }
+
+    private var isHapticsEnabled: Bool {
+        get { UserDefaults.standard.object(forKey: PreferenceKey.hapticsEnabled) as? Bool ?? true }
+        set { UserDefaults.standard.set(newValue, forKey: PreferenceKey.hapticsEnabled) }
     }
 
     private var hasSeenTutorial: Bool {
@@ -156,6 +173,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         scoreLabel.zPosition = 20
         scoreLabel.text = "0"
         scoreLabel.isHidden = true
+        scoreLabel.isAccessibilityElement = true
+        scoreLabel.accessibilityLabel = localizedFormat("score_format", 0)
         addChild(scoreLabel)
 
         comboLabel = SKLabelNode(fontNamed: "HelveticaNeue-Bold")
@@ -164,6 +183,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         comboLabel.position = CGPoint(x: size.width / 2, y: size.height - 120)
         comboLabel.zPosition = 20
         comboLabel.isHidden = true
+        comboLabel.isAccessibilityElement = true
         addChild(comboLabel)
 
         // High score label
@@ -173,6 +193,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         highScoreLabel.position = CGPoint(x: size.width / 2, y: size.height - 150)
         highScoreLabel.zPosition = 20
         highScoreLabel.text = localizedFormat("best_format", scoreManager.highScore)
+        highScoreLabel.isAccessibilityElement = true
+        highScoreLabel.accessibilityLabel = highScoreLabel.text
         addChild(highScoreLabel)
 
         // Title label
@@ -182,15 +204,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         titleLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.7)
         titleLabel.zPosition = 20
         titleLabel.text = localized("game_title")
+        titleLabel.isAccessibilityElement = true
+        titleLabel.accessibilityLabel = titleLabel.text
         addChild(titleLabel)
 
         // Tap to start
-        tapToStartLabel = SKLabelNode(fontNamed: "HelveticaNeue")
+        tapToStartLabel = AccessibleLabelNode(fontNamed: "HelveticaNeue")
         tapToStartLabel.fontSize = 22
         tapToStartLabel.fontColor = .white
         tapToStartLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.55)
         tapToStartLabel.zPosition = 20
         tapToStartLabel.text = localized("tap_to_start")
+        configureButton(tapToStartLabel, helpKey: "start_help") { [weak self] in
+            self?.enterPlayingState()
+        }
         addChild(tapToStartLabel)
 
         tutorialLabel = SKLabelNode(fontNamed: "HelveticaNeue")
@@ -199,57 +226,92 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         tutorialLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.49)
         tutorialLabel.zPosition = 20
         tutorialLabel.text = localized("tutorial")
+        tutorialLabel.isAccessibilityElement = true
+        tutorialLabel.accessibilityLabel = tutorialLabel.text
         addChild(tutorialLabel)
 
         // Game over
         gameOverLabel = SKLabelNode(fontNamed: "HelveticaNeue-Bold")
         gameOverLabel.fontSize = 48
         gameOverLabel.fontColor = UIColor(red: 0.9, green: 0.2, blue: 0.2, alpha: 1.0)
-        gameOverLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.6)
+        gameOverLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.62)
         gameOverLabel.zPosition = 20
         gameOverLabel.text = localized("game_over")
         gameOverLabel.isHidden = true
+        gameOverLabel.isAccessibilityElement = true
+        gameOverLabel.accessibilityLabel = gameOverLabel.text
         addChild(gameOverLabel)
 
         // Game over score
         gameOverScoreLabel = SKLabelNode(fontNamed: "HelveticaNeue")
-        gameOverScoreLabel.fontSize = 24
+        gameOverScoreLabel.fontSize = 20
         gameOverScoreLabel.fontColor = .white
         gameOverScoreLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.52)
         gameOverScoreLabel.zPosition = 20
+        gameOverScoreLabel.numberOfLines = 0
+        gameOverScoreLabel.preferredMaxLayoutWidth = size.width - 40
+        gameOverScoreLabel.verticalAlignmentMode = .center
         gameOverScoreLabel.isHidden = true
+        gameOverScoreLabel.isAccessibilityElement = true
         addChild(gameOverScoreLabel)
 
         // Restart
-        restartLabel = SKLabelNode(fontNamed: "HelveticaNeue-Bold")
+        restartLabel = AccessibleLabelNode(fontNamed: "HelveticaNeue-Bold")
         restartLabel.fontSize = 24
         restartLabel.fontColor = .white
-        restartLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.44)
+        restartLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.40)
         restartLabel.zPosition = 20
         restartLabel.text = localized("tap_to_restart")
         restartLabel.isHidden = true
+        configureButton(restartLabel, helpKey: "restart_help") { [weak self] in
+            self?.restartGame()
+        }
         addChild(restartLabel)
 
-        privacyLabel = SKLabelNode(fontNamed: "HelveticaNeue")
+        shareLabel = AccessibleLabelNode(fontNamed: "HelveticaNeue-Bold")
+        shareLabel.fontSize = 18
+        shareLabel.fontColor = .white
+        shareLabel.position = CGPoint(x: size.width / 2, y: size.height * 0.34)
+        shareLabel.zPosition = 20
+        shareLabel.text = localized("share")
+        shareLabel.isHidden = true
+        configureButton(shareLabel, helpKey: "share_help") { [weak self] in
+            self?.shareScore()
+        }
+        addChild(shareLabel)
+
+        privacyLabel = AccessibleLabelNode(fontNamed: "HelveticaNeue")
         privacyLabel.fontSize = 14
         privacyLabel.fontColor = UIColor.white.withAlphaComponent(0.85)
         privacyLabel.position = CGPoint(x: size.width / 2, y: GroundNode.groundHeight + 24)
         privacyLabel.zPosition = 20
         privacyLabel.text = localized("privacy")
-        privacyLabel.isAccessibilityElement = true
-        privacyLabel.accessibilityLabel = localized("privacy")
-        privacyLabel.accessibilityHelp = localized("privacy_help")
+        configureButton(privacyLabel, helpKey: "privacy_help") { [weak self] in
+            self?.openPrivacyPolicy()
+        }
         addChild(privacyLabel)
 
-        soundLabel = SKLabelNode(fontNamed: "HelveticaNeue")
+        soundLabel = AccessibleLabelNode(fontNamed: "HelveticaNeue")
         soundLabel.fontSize = 14
         soundLabel.fontColor = UIColor.white.withAlphaComponent(0.85)
         soundLabel.position = CGPoint(x: size.width / 2, y: GroundNode.groundHeight + 48)
         soundLabel.zPosition = 20
-        soundLabel.isAccessibilityElement = true
-        soundLabel.accessibilityHelp = localized("sound_help")
         updateSoundLabel()
+        configureButton(soundLabel, helpKey: "sound_help") { [weak self] in
+            self?.toggleSound()
+        }
         addChild(soundLabel)
+
+        hapticsLabel = AccessibleLabelNode(fontNamed: "HelveticaNeue")
+        hapticsLabel.fontSize = 14
+        hapticsLabel.fontColor = UIColor.white.withAlphaComponent(0.85)
+        hapticsLabel.position = CGPoint(x: size.width / 2, y: GroundNode.groundHeight + 72)
+        hapticsLabel.zPosition = 20
+        updateHapticsLabel()
+        configureButton(hapticsLabel, helpKey: "haptics_help") { [weak self] in
+            self?.toggleHaptics()
+        }
+        addChild(hapticsLabel)
     }
 
     // MARK: - States
@@ -257,6 +319,73 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private func updateSoundLabel() {
         soundLabel.text = localized(isSoundEnabled ? "sound_on" : "sound_off")
         soundLabel.accessibilityLabel = soundLabel.text
+    }
+
+    private func updateHapticsLabel() {
+        hapticsLabel.text = localized(isHapticsEnabled ? "haptics_on" : "haptics_off")
+        hapticsLabel.accessibilityLabel = hapticsLabel.text
+    }
+
+    private func configureButton(
+        _ label: AccessibleLabelNode,
+        helpKey: String,
+        action: @escaping () -> Void
+    ) {
+        label.isAccessibilityElement = true
+        label.isAccessibilityEnabled = true
+        label.accessibilityTraits = .button
+        label.accessibilityLabel = label.text
+        label.accessibilityHelp = localized(helpKey)
+        label.activationHandler = action
+    }
+
+    private func toggleSound() {
+        isSoundEnabled.toggle()
+        updateSoundLabel()
+    }
+
+    private func toggleHaptics() {
+        isHapticsEnabled.toggle()
+        updateHapticsLabel()
+        if isHapticsEnabled {
+            starFeedback.selectionChanged()
+        }
+    }
+
+    private func openPrivacyPolicy() {
+        guard let url = URL(string: "https://mustafarec.github.io/flappybirds/privacy/") else { return }
+        UIApplication.shared.open(url)
+    }
+
+    private func runSummary() -> String {
+        String(
+            format: localized("run_summary_format"),
+            scoreManager.currentScore,
+            scoreManager.gatesPassed,
+            scoreManager.longestStarStreak
+        )
+    }
+
+    private func shareScore() {
+        guard let view,
+              let presenter = view.window?.rootViewController,
+              presenter.presentedViewController == nil else { return }
+
+        let text = String(
+            format: localized("share_message_format"),
+            scoreManager.currentScore,
+            scoreManager.gatesPassed,
+            scoreManager.longestStarStreak
+        )
+        let controller = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        controller.popoverPresentationController?.sourceView = view
+        controller.popoverPresentationController?.sourceRect = CGRect(
+            x: view.bounds.midX,
+            y: view.bounds.midY,
+            width: 0,
+            height: 0
+        )
+        presenter.present(controller, animated: true)
     }
 
     private func playSound(_ name: String) {
@@ -267,20 +396,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private func flapBird() {
         bird.flap()
         playSound("flap.wav")
-        flapFeedback.impactOccurred()
+        if isHapticsEnabled {
+            flapFeedback.impactOccurred()
+        }
     }
 
     private func enterReadyState() {
         gameState = .ready
         bird.enablePhysics()
         bird.physicsBody?.affectedByGravity = false
+        bird.removeAllActions()
 
         // Gentle bobbing animation
-        let bobUp = SKAction.moveBy(x: 0, y: 8, duration: 0.6)
-        let bobDown = SKAction.moveBy(x: 0, y: -8, duration: 0.6)
-        bobUp.timingMode = .easeInEaseOut
-        bobDown.timingMode = .easeInEaseOut
-        bird.run(SKAction.repeatForever(SKAction.sequence([bobUp, bobDown])))
+        if !UIAccessibility.isReduceMotionEnabled {
+            let bobUp = SKAction.moveBy(x: 0, y: 8, duration: 0.6)
+            let bobDown = SKAction.moveBy(x: 0, y: -8, duration: 0.6)
+            bobUp.timingMode = .easeInEaseOut
+            bobDown.timingMode = .easeInEaseOut
+            bird.run(SKAction.repeatForever(SKAction.sequence([bobUp, bobDown])))
+        }
 
         titleLabel.isHidden = false
         tapToStartLabel.isHidden = false
@@ -290,9 +424,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         gameOverLabel.isHidden = true
         gameOverScoreLabel.isHidden = true
         restartLabel.isHidden = true
+        shareLabel.isHidden = true
         privacyLabel.isHidden = false
         soundLabel.isHidden = false
+        hapticsLabel.isHidden = false
         highScoreLabel.text = localizedFormat("best_format", scoreManager.highScore)
+        highScoreLabel.accessibilityLabel = highScoreLabel.text
+        UIAccessibility.post(notification: .screenChanged, argument: titleLabel)
     }
 
     private func enterPlayingState() {
@@ -304,6 +442,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         scoreManager.reset()
         scoreLabel.text = "0"
+        scoreLabel.accessibilityLabel = localizedFormat("score_format", 0)
         comboLabel.isHidden = true
 
         titleLabel.isHidden = true
@@ -313,8 +452,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         gameOverLabel.isHidden = true
         gameOverScoreLabel.isHidden = true
         restartLabel.isHidden = true
+        shareLabel.isHidden = true
         privacyLabel.isHidden = true
         soundLabel.isHidden = true
+        hapticsLabel.isHidden = true
 
         startSpawningPipes()
     }
@@ -322,17 +463,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private func enterGameOverState() {
         gameState = .gameOver
         playSound("hit.wav")
-        collisionFeedback.impactOccurred()
+        if isHapticsEnabled {
+            collisionFeedback.impactOccurred()
+        }
         comboLabel.isHidden = true
         privacyLabel.isHidden = true
         soundLabel.isHidden = true
+        hapticsLabel.isHidden = true
         bird.disablePhysics()
         bird.removeAction(forKey: ActionKey.birdRotation)
 
         // Let bird fall visually
-        let fall = SKAction.moveBy(x: 0, y: -size.height * 0.3, duration: 0.3)
-        let rotate = SKAction.rotate(toAngle: -.pi / 2, duration: 0.3)
-        bird.run(SKAction.group([fall, rotate]))
+        if !UIAccessibility.isReduceMotionEnabled {
+            let fall = SKAction.moveBy(x: 0, y: -size.height * 0.3, duration: 0.3)
+            let rotate = SKAction.rotate(toAngle: -.pi / 2, duration: 0.3)
+            bird.run(SKAction.group([fall, rotate]))
+        }
 
         scoreManager.saveHighScore()
         stopSpawningPipes()
@@ -346,13 +492,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
 
         // Show game over UI with delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
+        let delay = UIAccessibility.isReduceMotionEnabled ? 0 : 0.4
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
             guard let self, self.gameState == .gameOver else { return }
             self.gameOverLabel.isHidden = false
-            self.gameOverScoreLabel.text = self.localizedFormat("score_format", self.scoreManager.currentScore)
+            self.gameOverScoreLabel.text = self.runSummary()
+            self.gameOverScoreLabel.accessibilityLabel = self.gameOverScoreLabel.text
             self.gameOverScoreLabel.isHidden = false
             self.restartLabel.isHidden = false
+            self.shareLabel.isHidden = false
             self.highScoreLabel.text = self.localizedFormat("best_format", self.scoreManager.highScore)
+            self.highScoreLabel.accessibilityLabel = self.highScoreLabel.text
+            UIAccessibility.post(notification: .screenChanged, argument: self.gameOverLabel)
         }
     }
 
@@ -405,14 +556,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             let touchedNodes = nodes(at: touch.location(in: self))
 
             if touchedNodes.contains(where: { $0 === soundLabel }) {
-                isSoundEnabled.toggle()
-                updateSoundLabel()
+                toggleSound()
                 return
             }
 
-            if touchedNodes.contains(where: { $0 === privacyLabel }),
-               let url = URL(string: "https://mustafarec.github.io/flappybirds/privacy/") {
-                UIApplication.shared.open(url)
+            if touchedNodes.contains(where: { $0 === hapticsLabel }) {
+                toggleHaptics()
+                return
+            }
+
+            if touchedNodes.contains(where: { $0 === privacyLabel }) {
+                openPrivacyPolicy()
+                return
+            }
+        }
+
+        if gameState == .gameOver, let touch = touches.first {
+            let touchedNodes = nodes(at: touch.location(in: self))
+            if touchedNodes.contains(where: { $0 === shareLabel }) {
+                shareScore()
                 return
             }
         }
@@ -479,14 +641,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 pipeNode.scored = true
                 scoreManager.recordGate(starCollected: pipeNode.starCollected)
                 scoreLabel.text = "\(scoreManager.currentScore)"
+                scoreLabel.accessibilityLabel = localizedFormat("score_format", scoreManager.currentScore)
                 comboLabel.text = localizedFormat("combo_format", scoreManager.currentMultiplier)
+                comboLabel.accessibilityLabel = comboLabel.text
                 comboLabel.isHidden = scoreManager.currentMultiplier < 2
                 playSound("score.wav")
 
                 // Flash score label
-                let scaleUp = SKAction.scale(to: 1.3, duration: 0.1)
-                let scaleDown = SKAction.scale(to: 1.0, duration: 0.1)
-                scoreLabel.run(SKAction.sequence([scaleUp, scaleDown]))
+                if !UIAccessibility.isReduceMotionEnabled {
+                    let scaleUp = SKAction.scale(to: 1.3, duration: 0.1)
+                    let scaleDown = SKAction.scale(to: 1.0, duration: 0.1)
+                    scoreLabel.run(SKAction.sequence([scaleUp, scaleDown]))
+                }
             }
         }
 
@@ -501,7 +667,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 pipeNode.starCollected = true
                 starNode.removeFromParent()
                 playSound("star.wav")
-                starFeedback.selectionChanged()
+                if isHapticsEnabled {
+                    starFeedback.selectionChanged()
+                }
             }
         }
     }

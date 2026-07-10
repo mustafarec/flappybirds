@@ -20,6 +20,10 @@ Amaç: Oynanabilir mevcut çekirdeği koruyarak oyun hissini geliştirmek ve kar
 - [x] Gizlilik ve destek bağlantılarını `mustafarec/flappybirds` ile hizala
 - [ ] GitHub Pages sonrasında gizlilik ve destek bağlantılarını canlı ortamda doğrula
 - [x] Skor, yüksek skor ve zorluk davranışı için kritik test kaynaklarını tamamla
+- [ ] İngilizce ve Türkçe arayüzü küçük ve büyük ekranlarda taşma/kesilme açısından doğrula
+- [ ] Ekran kilidi, Denetim Merkezi, telefon kesintisi ve uygulamalar arası geçiş sonrası oyun durumunu test et
+- [ ] Temiz kurulum ve sürüm yükseltme senaryolarında yüksek skor ile tercihlerin korunmasını doğrula
+- [ ] VoiceOver, Voice Control, kontrast ve Hareketi Azalt ayarlarıyla erişilebilirlik kontrolü yap
 
 **Çıkış kriteri:** Testler geçiyor, engelleyici hata yok ve aynı oyun oturumu desteklenen ekran boyutlarında tutarlı çalışıyor.
 
@@ -45,6 +49,11 @@ Amaç: Oynanabilir mevcut çekirdeği koruyarak oyun hissini geliştirmek ve kar
 - [ ] Güncel yaş derecelendirmesi sorularını yanıtla
 - [ ] TestFlight sürümünü küçük bir test grubuyla doğrula
 - [ ] Xcode 26 ve iOS 26 SDK ile Release arşivi oluştur
+- [ ] İçerik hakları, fiyat/ülke erişimi, DSA durumu ve App Review iletişim/not alanlarını tamamla
+- [ ] Şifreleme kullanımını değerlendir ve gerekli export compliance beyanını tamamla
+- [ ] App Store erişilebilirlik etiketlerini yalnızca cihaz testleriyle doğrulanan özellikler için doldur
+- [ ] Arşivi App Store'a yükle, işleme sürecini ve tüm doğrulama uyarılarını temizle
+- [ ] TestFlight çökme raporlarını, ekran görüntülü geri bildirimleri ve farklı cihaz sonuçlarını incele
 
 **Çıkış kriteri:** TestFlight geri bildirimlerinde engelleyici sorun yok; mağaza bilgileri, gizlilik beyanı ve yüklenebilir Release arşivi hazır.
 
@@ -56,6 +65,13 @@ Amaç: Oynanabilir mevcut çekirdeği koruyarak oyun hissini geliştirmek ve kar
 - [ ] Sonraki sürüm önceliklerini gerçek kullanım ve geri bildirime göre belirle
 
 **Çıkış kriteri:** 1.0 yayında ve kritik hata bulunmuyor ya da düzeltme sürümünde kapatılmış durumda.
+
+## 5. 1.1 hafif kalite
+
+- [x] Haptik geri bildirim için cihazda saklanan ayrı aç/kapat seçeneği ekle
+- [x] Oyun sonu ekranında geçilen kapı ve en uzun yıldız zinciri özetini göster
+- [x] Sistem paylaşım ekranıyla metin tabanlı skor paylaşımı ekle
+- [ ] Bu özellikleri erişilebilirlik ve iki dilde arayüz testlerinden geçir
 
 ## Şimdilik kapsam dışı
 

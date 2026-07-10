@@ -28,16 +28,21 @@ final class ScoreManagerTests: XCTestCase {
             score.recordGate(starCollected: true)
         }
         XCTAssertEqual(score.currentMultiplier, 5)
+        XCTAssertEqual(score.starStreak, 7)
+        XCTAssertEqual(score.longestStarStreak, 7)
 
         let scoreBeforeMiss = score.currentScore
         score.recordGate(starCollected: false)
         XCTAssertEqual(score.currentScore, scoreBeforeMiss + 1)
         XCTAssertEqual(score.currentMultiplier, 1)
+        XCTAssertEqual(score.starStreak, 0)
+        XCTAssertEqual(score.longestStarStreak, 7)
 
         score.reset()
         XCTAssertEqual(score.currentScore, 0)
         XCTAssertEqual(score.starStreak, 0)
         XCTAssertEqual(score.gatesPassed, 0)
+        XCTAssertEqual(score.longestStarStreak, 0)
     }
 
     func testHighScoreOnlyMovesUp() throws {

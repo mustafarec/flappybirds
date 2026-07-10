@@ -5,12 +5,15 @@ This is a local draft. Final values, screenshots, age rating, and privacy answer
 ## Shared information
 
 - Version: `1.0`
+- Price and availability: Free, worldwide
 - Primary category: Games
 - Subcategories: Casual, Arcade
 - Copyright: `© 2026 rcpgl`
 - Support URL: https://github.com/mustafarec/flappybirds/issues
 - Marketing URL: https://github.com/mustafarec/flappybirds
 - Privacy policy URL: https://mustafarec.github.io/flappybirds/privacy/
+- Content rights: All game art and audio are original and documented in `ASSET_PROVENANCE.md`; no third-party content is included.
+- Export compliance: The app uses no non-exempt encryption and declares `ITSAppUsesNonExemptEncryption = false`.
 
 ## English
 
@@ -29,7 +32,9 @@ Collect consecutive stars to build your score multiplier up to x5. Miss a star a
 - Star-chain scoring up to x5
 - Progressive difficulty
 - Local high score
+- Run summary and system score sharing
 - Original pixel-art visuals and retro sound effects
+- Separate sound and haptics controls
 - English and Turkish support
 - Offline play with no accounts, ads, analytics, or tracking
 
@@ -50,7 +55,9 @@ Puan çarpanını x5'e kadar yükseltmek için yıldızları art arda topla. Bir
 - x5'e kadar yıldız zinciri
 - Kademeli zorluk
 - Cihazda saklanan en yüksek skor
+- Koşu özeti ve sistem skor paylaşımı
 - Özgün piksel görselleri ve retro ses efektleri
+- Ayrı ses ve haptik kontrolleri
 - İngilizce ve Türkçe desteği
 - Hesap, reklam, analitik veya takip olmadan çevrimdışı oynanış
 
@@ -60,8 +67,16 @@ Puan çarpanını x5'e kadar yükseltmek için yıldızları art arda topla. Bir
 - Accounts, advertising, analytics, tracking, user-generated content, messaging, purchases, and third-party SDKs: `No`
 - Violence, gambling, contests, mature themes, profanity, horror, medical content, alcohol, drugs, sexual content, and unrestricted web access: `None`
 - The privacy-policy link opens an external browser only when the player taps `Privacy`.
+- Score sharing opens the iOS system share sheet only when the player taps `Share Score`; the app does not collect the chosen destination.
+- Local-only data consists of the high score, sound preference, haptics preference, and tutorial status.
 - Final rating is assigned by App Store Connect after the current questionnaire is completed.
 
 ## Review notes
 
-Sky Hopper requires no login or network connection. Tap anywhere to start and flap. Collect consecutive stars to increase the multiplier; touching a tower, the ground, or the ceiling ends the run. The Privacy link is on the ready screen, and game sounds can be disabled there.
+Sky Hopper requires no login or network connection. Tap anywhere to start and flap. Collect consecutive stars to increase the multiplier; touching a tower, the ground, or the ceiling ends the run. The Privacy link is on the ready screen, where sound and haptics can be disabled separately. The game-over screen can open the standard iOS share sheet with a text-only score summary.
+
+## Submission handoff
+
+- Confirm the account holder's Digital Services Act trader status in App Store Connect.
+- Enter current App Review contact name, email, and phone number.
+- Declare accessibility support only after VoiceOver, Voice Control, contrast, and Reduce Motion are verified on a device.
